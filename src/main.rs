@@ -78,8 +78,8 @@ fn main() {
         rend.draw_quad(
             &shader, 
             &sprite, 
-            &cgmath::vec3::<f32>(50.0, 50.0, 50.0), 
-            &cgmath::vec2::<f32>(200.0, 200.0)
+            &cgmath::vec3::<f32>(200.0, 200.0, -1.0), 
+            &cgmath::vec2::<f32>(200.0, 250.0)
         );
 
         window.swap_buffers();

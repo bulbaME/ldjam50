@@ -11,7 +11,7 @@ use std::ffi::CString;
 use image;
 
 use cgmath::prelude::*;
-use cgmath::{Matrix4, Vector3, Vector2};
+use cgmath::{Matrix4, Vector4, Vector3, Vector2, Deg, vec4, vec3};
 
 const SCREEN_WIDTH: u32 = 800;
 const SCREEN_HEIGHT: u32 = 800;
@@ -124,15 +124,15 @@ impl Shader {
                 println!("WARNING: `{}` is not a valid uniform location!", location);
             }
 
-            gl::UniformMatrix4fv(loc, 1, gl::TRUE, mat4.as_ptr());
+            gl::UniformMatrix4fv(loc, 1, gl::FALSE, mat4.as_ptr());
         }
     }
 }
 
 pub struct Texture {
     texture_id: u32,
-    width: u32,
-    height: u32,
+    width: f32,
+    height: f32,
 }
 
 impl Texture {
@@ -140,21 +140,22 @@ impl Texture {
 
         use image::io::Reader as ImageReader;
 
-        let mut texture = Texture { texture_id: 0, width: 0, height: 0 };
+        let mut texture: u32 = 0;
+        let (width, height): (u32, u32);
 
         let img = ImageReader::open(["data/textures/", path].concat()).expect("Failed to open image")
             .decode().expect("Failed to decode image")
             .into_rgb8();
         let img = image::imageops::flip_vertical(&img);
 
-        (texture.width, texture.height) = img.dimensions();
+        (width, height) = img.dimensions();
         let data = img.into_raw();
         
         unsafe {
-            gl::GenTextures(1, &mut texture.texture_id);
+            gl::GenTextures(1, &mut texture);
 
             gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, texture.texture_id);
+            gl::BindTexture(gl::TEXTURE_2D, texture);
 
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
@@ -171,7 +172,7 @@ impl Texture {
             gl::TexImage2D(
                 gl::TEXTURE_2D, 0, 
                 gl::RGB as i32,
-                texture.width as i32, texture.height as i32, 
+                width as i32, height as i32, 
                 0, gl::RGB, 
                 gl::UNSIGNED_BYTE,
                 data.as_ptr().cast()
@@ -182,7 +183,11 @@ impl Texture {
         }
 
         // Return the texture
-        texture
+        Texture {
+            texture_id: texture,
+            width: width as f32,
+            height: height as f32
+        }
     }
 
     pub fn bind(&self, slot: u32) {
@@ -197,6 +202,13 @@ impl Texture {
             gl::BindTexture(gl::TEXTURE_2D, 0);
         }
     }
+
+    pub fn get_size(&self) -> Vector2<f32> {
+        Vector2 { 
+            x: self.width,
+            y: self.height
+        }
+    }
 }
 
 pub struct Mesh {
@@ -206,14 +218,14 @@ pub struct Mesh {
 }
 
 impl Mesh {
-    pub fn new() -> Mesh {
+    pub fn new(size: Vector2<f32>) -> Mesh {
 
         // Vertex data
         let vertex_buffer_: [f32; 12] = [
-            0.0, 0.0, 1.0,
-            1.0, 0.0, 1.0,
-            1.0, 1.0, 1.0,
-            0.0, 1.0, 1.0
+            0.0, 0.0, 0.0,
+            1.0, 0.0, 0.0,
+            1.0, 1.0, 0.0,
+            0.0, 1.0, 0.0
         ];
         let vertex_size: usize = 3 * mem::size_of::<f32>(); 
 
@@ -275,9 +287,10 @@ pub struct Sprite {
 
 impl Sprite {
     pub fn new(path: &str, filter: i32) -> Sprite {
+        let texture = Texture::new(path, filter);
         Sprite {
-            mesh: Mesh::new(),
-            texture: Texture::new(path, filter),
+            mesh: Mesh::new(texture.get_size()),
+            texture: texture
         }
     }
 }
@@ -287,6 +300,10 @@ pub struct Renderer {}
 impl Renderer {
     pub fn new() -> Renderer {
         // TODO: Default texture support
+        unsafe {
+            gl::Viewport(0, 0, SCREEN_WIDTH as i32, SCREEN_HEIGHT as i32);            
+        }
+
         Renderer {}
     }
 
@@ -296,10 +313,10 @@ impl Renderer {
         sprite.texture.bind(0);
 
         // Calculate the MVP
-        let proj: Matrix4<f32> = cgmath::ortho(0.0, SCREEN_WIDTH as f32, 0.0, SCREEN_HEIGHT as f32, -1.0, 100.0);
+        let proj: Matrix4<f32> = cgmath::ortho(0.0, SCREEN_WIDTH as f32, 0.0, SCREEN_HEIGHT as f32, 0.0, 100.0);
         let mut model: Matrix4<f32> = Matrix4::identity();
         model = model * Matrix4::<f32>::from_translation(position.clone());
-        model = model * Matrix4::<f32>::from_scale(size.x); 
+        model = model * Matrix4::<f32>::from_scale(size.x);
 
 
         let mvp: Matrix4<f32> = proj * model;
@@ -311,10 +328,10 @@ impl Renderer {
         unsafe {
             // Bind the mesh
             gl::BindVertexArray(sprite.mesh.vao);
-            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, sprite.mesh.ebo);
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, sprite.mesh.ebo); // it is unnecessary to have it here
 
             // Draw the quad
-            gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, core::ptr::null());
+            gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, 0 as *const _);
 
             // Unbind the mesh
             gl::BindVertexArray(0);
