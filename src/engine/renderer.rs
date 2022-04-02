@@ -1,12 +1,12 @@
 #[allow(unused_imports)]
 extern crate glfw;
 extern crate cgmath;
-extern crate cstr;
 
 extern crate gl;
 use self::gl::types::*;
 
 use std::mem;
+use std::ffi::CString;
 
 use image;
 
@@ -101,13 +101,13 @@ impl Shader {
         }
     }
 
-    pub fn set_int(&self, location: &str, value: i32) {
+    pub fn set_int(&self, location: &'static str, value: i32) {
         unsafe {
-            let loc = gl::GetUniformLocation(self.id, cstr::cstr!(location).as_ptr());
+            let location_ = CString::new(location).unwrap();
+            let loc = gl::GetUniformLocation(self.id, location_.as_ptr());
 
             if loc == -1 {
-                println!("WARNING: `{}` is not a valid uniform location!", location);
-                return;
+                panic!("WARNING: `{}` is not a valid uniform location!", location);
             }
 
             gl::Uniform1i(loc, value);
@@ -116,11 +116,11 @@ impl Shader {
 
     pub fn set_mat4(&self, location: &str, mat4: &Matrix4<f32>) {
         unsafe {
-            let loc = gl::GetUniformLocation(self.id, cstr::cstr!(location).as_ptr());
+            let location_ = CString::new(location).unwrap();
+            let loc = gl::GetUniformLocation(self.id, location_.as_ptr());
 
             if loc == -1 {
-                println!("WARNING: `{}` is not a valid uniform location!", location);
-                return;
+                panic!("WARNING: `{}` is not a valid uniform location!", location);
             }
 
             gl::UniformMatrix4fv(loc, 1, gl::FALSE, mat4.as_ptr())
