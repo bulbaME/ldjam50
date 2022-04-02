@@ -12,38 +12,6 @@ use cgmath::{vec2, perspective, Deg, Matrix4, vec3};
 use ldjam50::engine;
 use ldjam50::engine::renderer;
 
-
-fn read_shader(name: &'static str) -> String {
-    fs::read_to_string(name)
-        .expect("Cannot read the shader")
-}
-
-unsafe fn compile_shader(code: &str, shader_type: GLenum) -> u32 {
-    let shader = gl::CreateShader(shader_type);
-    gl::ShaderSource(
-        shader, 1, 
-        &(code.as_bytes().as_ptr().cast()),
-        &(code.len().try_into().unwrap())
-    );
-    gl::CompileShader(shader);
-    let mut result = 0;
-    gl::GetShaderiv(shader, gl::COMPILE_STATUS, &mut result);
-    if result == 0 {
-        let mut log: Vec<u8> = Vec::with_capacity(1024);
-        let mut log_len = 0i32;
-        gl::GetShaderInfoLog(
-            shader,
-            1024,
-            &mut log_len,
-            log.as_mut_ptr().cast()
-        );
-        log.set_len(log_len.try_into().unwrap());
-        panic!("Shader compile error: {}", String::from_utf8_lossy(&log));
-    }
-
-    shader
-}
-
 fn main() {
     let (mut window, event_handler, mut glfw) = engine::init();
 
@@ -104,6 +72,8 @@ fn main() {
             gl::ClearColor(0.12, 0.1, 0.24, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
+
+        shader.bind();
 
         rend.draw_quad(
             &shader, 

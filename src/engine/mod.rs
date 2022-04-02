@@ -16,7 +16,7 @@ use cgmath::prelude::*;
 use cgmath::{Vector2, Matrix4, vec3, vec2};
 
 static WINDOW_WIDTH: u32 = 800;
-static WINDOW_HEIGHT: u32 = 800;
+static WINDOW_HEIGHT: u32 = 600;
 static WINDOW_TITLE: &str = "LD50 Game";
 
 #[cfg(target_os = "macos")]

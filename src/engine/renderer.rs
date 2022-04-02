@@ -14,7 +14,7 @@ use cgmath::prelude::*;
 use cgmath::{Matrix4, Vector3, Vector2};
 
 const SCREEN_WIDTH: u32 = 800;
-const SCREEN_HEIGHT: u32 = 600;
+const SCREEN_HEIGHT: u32 = 800;
 
 fn read_shader(path: &str) -> String {
     std::fs::read_to_string(path)
@@ -22,11 +22,12 @@ fn read_shader(path: &str) -> String {
 }
 
 unsafe fn compile_shader(code: &str, shader_type: GLenum) -> u32 {
+
     let shader = gl::CreateShader(shader_type);
     gl::ShaderSource(
         shader, 1, 
-        &(code.as_bytes().as_ptr().cast()),
-        std::ptr::null()
+        &(code.as_bytes().as_ptr().cast()), 
+        &(code.len().try_into().unwrap()),
     );
     gl::CompileShader(shader);
 
@@ -34,16 +35,16 @@ unsafe fn compile_shader(code: &str, shader_type: GLenum) -> u32 {
     let mut info_log: Vec<u8> = Vec::with_capacity(lenght as usize);
     info_log.set_len(lenght as usize - 1);
 
-    let mut result = gl::FALSE as i32;
+    let mut result = gl::FALSE as i32; 
     gl::GetShaderiv(shader, gl::COMPILE_STATUS, &mut result);
-    if result != gl::TRUE as i32 {
+    if result == gl::FALSE as i32 {
         gl::GetShaderInfoLog(
             shader,
             512,
             &mut lenght,
             info_log.as_mut_ptr().cast()
         );
-        println!("Shader compile error: {}", String::from_utf8_lossy(&info_log));
+        panic!("Shader compile error: {}", String::from_utf8_lossy(&info_log));
     }
 
     shader
@@ -70,12 +71,12 @@ unsafe fn create_shader_program(vertex: &str, fragment: &str) -> u32 {
 
     let mut success = gl::FALSE as i32;
     gl::GetProgramiv(shader, gl::LINK_STATUS, &mut success);
-    if success != gl::TRUE as i32 {
+    if success == gl::FALSE as i32 {
         gl::GetProgramInfoLog(shader, 512, core::ptr::null_mut(), info_log.as_mut_ptr().cast());
         println!("ERROR::SHADER::PROGRAM::COMPILATION_FAILED\n{}", String::from_utf8_lossy(&info_log));
     }
 
-    return shader;
+    shader
 }
 
 pub struct Shader {
@@ -107,7 +108,7 @@ impl Shader {
             let loc = gl::GetUniformLocation(self.id, location_.as_ptr());
 
             if loc == -1 {
-                panic!("WARNING: `{}` is not a valid uniform location!", location);
+                println!("WARNING: `{}` is not a valid uniform location!", location);
             }
 
             gl::Uniform1i(loc, value);
@@ -120,10 +121,10 @@ impl Shader {
             let loc = gl::GetUniformLocation(self.id, location_.as_ptr());
 
             if loc == -1 {
-                panic!("WARNING: `{}` is not a valid uniform location!", location);
+                println!("WARNING: `{}` is not a valid uniform location!", location);
             }
 
-            gl::UniformMatrix4fv(loc, 1, gl::FALSE, mat4.as_ptr())
+            gl::UniformMatrix4fv(loc, 1, gl::TRUE, mat4.as_ptr());
         }
     }
 }
@@ -148,7 +149,7 @@ impl Texture {
 
         (texture.width, texture.height) = img.dimensions();
         let data = img.into_raw();
-
+        
         unsafe {
             gl::GenTextures(1, &mut texture.texture_id);
 
@@ -295,17 +296,18 @@ impl Renderer {
         sprite.texture.bind(0);
 
         // Calculate the MVP
-        let proj: Matrix4<f32> = cgmath::ortho(0.0, SCREEN_WIDTH as f32, 0.0, SCREEN_HEIGHT as f32, 0.0, 100.0);        
+        let proj: Matrix4<f32> = cgmath::ortho(0.0, SCREEN_WIDTH as f32, 0.0, SCREEN_HEIGHT as f32, -1.0, 100.0);
         let mut model: Matrix4<f32> = Matrix4::identity();
         model = model * Matrix4::<f32>::from_translation(position.clone());
         model = model * Matrix4::<f32>::from_scale(size.x); 
 
+
         let mvp: Matrix4<f32> = proj * model;
 
-        // Set uniforms
-        shader.set_int("uTexture", sprite.texture.texture_id as i32);
-        shader.set_mat4("uMVP", &mvp);
-
+        // Set uniforms 
+        shader.set_int("uTexture", 0); 
+        shader.set_mat4("uMVP", &mvp); 
+        
         unsafe {
             // Bind the mesh
             gl::BindVertexArray(sprite.mesh.vao);
