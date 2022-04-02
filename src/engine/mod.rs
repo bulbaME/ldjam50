@@ -3,10 +3,10 @@ extern crate glfw;
 extern crate cgmath;
 extern crate cstr;
 
-pub mod renderer2;
+pub mod renderer;
 
 use cstr::cstr;
-use glfw::{Action, Context, Key, WindowEvent};
+use glfw::{Action, Context, Key, WindowEvent, Glfw};
 use glfw::ffi::glfwPollEvents;
 use gl::types::*;
 
@@ -42,6 +42,29 @@ unsafe fn set_window_hints() {
     glfw::WindowHint::OpenGlProfile(glfw::OpenGlProfileHint::Core);
 }
 
+pub fn init() -> (glfw::Window, Receiver<(f64, WindowEvent)>, Glfw) {
+    let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS)
+        .expect("Failed to initialize glfw");
+
+   unsafe {
+        set_window_hints();
+    }
+
+    let (mut window, events) = glfw.create_window(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE, glfw::WindowMode::Windowed)
+        .expect("Failed to create window");
+
+    window.make_current();
+    window.set_key_polling(true);
+    
+    // Load OpenGL functions
+    gl::load_with(|symb| window.get_proc_address(symb));
+
+    // Return the Engine
+    (window, events, glfw)
+}
+
+
+/*
 pub fn init() -> (Engine, EventHandler) {
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS)
         .expect("Failed to initialize glfw");
@@ -69,7 +92,13 @@ pub fn init() -> (Engine, EventHandler) {
         glfw: glfw
     })
 }
+*/
+pub struct EventHandler {
+    events: Receiver<(f64, WindowEvent)>,
+    glfw: glfw::Glfw
+}
 
+/*
 pub struct EventHandler {
     events: Receiver<(f64, WindowEvent)>,
     glfw: glfw::Glfw
@@ -215,4 +244,4 @@ impl Sprite {
         gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, 0 as *const _);
         gl::BindVertexArray(0);
     }
-}
+} */

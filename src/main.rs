@@ -10,6 +10,8 @@ use glfw::{Action, Context, Key, WindowEvent};
 use cgmath::prelude::*;
 use cgmath::{vec2, perspective, Deg, Matrix4, vec3};
 use ldjam50::engine;
+use ldjam50::engine::renderer;
+
 
 fn read_shader(name: &'static str) -> String {
     fs::read_to_string(name)
@@ -43,8 +45,9 @@ unsafe fn compile_shader(code: &str, shader_type: GLenum) -> u32 {
 }
 
 fn main() {
-    let (mut eng, mut event_handler) = engine::init();
+    let (mut window, event_handler, mut glfw) = engine::init();
 
+    /* 
     // TODO: move all the shader stuff to the engine mod
     let shader: u32;
     unsafe {
@@ -85,5 +88,31 @@ fn main() {
         }
 
         eng.tick();
+    }
+    */
+
+    let rend = renderer::Renderer::new();
+
+    let shader = renderer::Shader::new("./data/shaders/base.vert", "./data/shaders/base.frag");
+    
+    let sprite = renderer::Sprite::new("test.jpg", gl::LINEAR as i32);
+    
+
+    while !window.should_close() {
+
+        unsafe {
+            gl::ClearColor(0.12, 0.1, 0.24, 1.0);
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+        }
+
+        rend.draw_quad(
+            &shader, 
+            &sprite, 
+            &cgmath::vec3::<f32>(50.0, 50.0, 50.0), 
+            &cgmath::vec2::<f32>(200.0, 200.0)
+        );
+
+        window.swap_buffers();
+        glfw.poll_events();
     }
 }
