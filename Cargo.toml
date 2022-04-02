@@ -9,6 +9,9 @@ image = "*"
 cgmath = "*"
 cstr = "*"
 
-[dependencies.glfw]
+[target.'cfg(not(target_os = "windows"))'.dependencies.glfw]
+git = "https://github.com/bjz/glfw-rs.git"
+
+[target.'cfg(target_os = "windows")'.dependencies.glfw]
 git = "https://github.com/bjz/glfw-rs.git"
 default-features = false

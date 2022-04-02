@@ -1,68 +1,89 @@
 extern crate glfw;
 extern crate gl;
+extern crate cgmath;
 
-use glfw::{Action, Context, Key};
+use gl::types::*;
 
-static SCREEN_WIDTH: u32 = 800;
-static SCREEN_HEIGHT: u32 = 800;
-static TITLE: &str = "LD50 Game";
+use std::fs;
 
-#[cfg(target_os = "macos")]
-unsafe fn set_window_hints() {
-    use glfw::ffi::glfwWindowHint;
+use glfw::{Action, Context, Key, WindowEvent};
+use cgmath::prelude::*;
+use cgmath::{vec2, perspective, Deg, Matrix4, vec3};
+use ldjam50::engine;
 
-    let GLFW_OPENGL_FORWARD_COMPAT = 0x00022006;
-    let GLFW_CONTEXT_VERSION_MAJOR = 0x00022002;
-    let GLFW_CONTEXT_VERSION_MINOR = 0x00022003;
-    let GLFW_OPENGL_PROFILE = 0x00022008;
-    let GLFW_OPENGL_CORE_PROFILE = 0x00032001;
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+fn read_shader(name: &'static str) -> String {
+    fs::read_to_string(name)
+        .expect("Cannot read the shader")
 }
 
-#[cfg(target_os = "windows")]
-unsafe fn set_window_hints() {
-    glfw::WindowHint::ContextVersion(3, 3);
-    glfw::WindowHint::OpenGlProfile(glfw::OpenGlProfileHint::Core);
+unsafe fn compile_shader(code: &str, shader_type: GLenum) -> u32 {
+    let shader = gl::CreateShader(shader_type);
+    gl::ShaderSource(
+        shader, 1, 
+        &(code.as_bytes().as_ptr().cast()),
+        &(code.len().try_into().unwrap())
+    );
+    gl::CompileShader(shader);
+    let mut result = 0;
+    gl::GetShaderiv(shader, gl::COMPILE_STATUS, &mut result);
+    if result == 0 {
+        let mut log: Vec<u8> = Vec::with_capacity(1024);
+        let mut log_len = 0i32;
+        gl::GetShaderInfoLog(
+            shader,
+            1024,
+            &mut log_len,
+            log.as_mut_ptr().cast()
+        );
+        log.set_len(log_len.try_into().unwrap());
+        panic!("Shader compile error: {}", String::from_utf8_lossy(&log));
+    }
+
+    shader
 }
 
 fn main() {
+    let (mut eng, mut event_handler) = engine::init();
+
+    // TODO: move all the shader stuff to the engine mod
+    let shader: u32;
     unsafe {
-        set_window_hints();
+        shader = gl::CreateProgram();
+        let vertex_shader = compile_shader(
+            &read_shader("./data/shaders/base.vert"), 
+            gl::VERTEX_SHADER
+        );
+        let fragment_shader = compile_shader(
+            &read_shader("./data/shaders/base.frag"), 
+            gl::FRAGMENT_SHADER
+        );
+
+        gl::AttachShader(shader, vertex_shader);
+        gl::AttachShader(shader, fragment_shader);
+        gl::LinkProgram(shader);
     }
 
-    let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS)
-        .expect("Failed to initialize glfw");
-    
-    // create window
-    let (mut window, events) = glfw.create_window(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, glfw::WindowMode::Windowed)
-        .expect("Failed to create GLFW Window!");
-    window.make_current();
-    window.set_key_polling(true);
-
-    // bind opengl to window
-    gl::load_with(|symb| window.get_proc_address(symb));
-
-    ldjam50::engine::eng_work();
+    // TODO: find a better way for this 
+    let mut rect1 = engine::Object::new("test.jpg", vec2(0.4, 0.4), shader);
+    rect1.set_proj(perspective(Deg(45.), 1., 0.01, 100.));
+    rect1.set_view(Matrix4::from_translation(vec3(0., 0., -3.)));
 
     #[allow(unused_labels)]
-    'main_loop: while !window.should_close() {
+    'main_loop: while eng.is_working() {
         unsafe {
             gl::ClearColor(0.2, 0.1, 0.3, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
-
-        glfw.poll_events();
-        for (_, event) in glfw::flush_messages(&events) {
-            if let glfw::WindowEvent::Key(Key::Escape, _, Action::Press, _) = event {
-                window.set_should_close(true);
+        
+        // FIXME: make this work properly
+        rect1.update();
+        
+        for (_, event) in event_handler.get() {
+            if let WindowEvent::Key(Key::Escape, _, Action::Press, _) = event {
+                eng.stop_working();
             }
         }
 
-        window.swap_buffers();
+        eng.tick();
     }
 }
