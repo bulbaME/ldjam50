@@ -103,7 +103,7 @@ impl Shader {
 
     pub fn set_int(&self, location: &str, value: i32) {
         unsafe {
-            let loc = gl::GetUniformLocation(self.id, location.as_ptr().cast());
+            let loc = gl::GetUniformLocation(self.id, cstr::cstr!(location).as_ptr());
 
             if loc == -1 {
                 println!("WARNING: `{}` is not a valid uniform location!", location);
@@ -116,7 +116,7 @@ impl Shader {
 
     pub fn set_mat4(&self, location: &str, mat4: &Matrix4<f32>) {
         unsafe {
-            let loc = gl::GetUniformLocation(self.id, location.as_ptr().cast());
+            let loc = gl::GetUniformLocation(self.id, cstr::cstr!(location).as_ptr());
 
             if loc == -1 {
                 println!("WARNING: `{}` is not a valid uniform location!", location);
