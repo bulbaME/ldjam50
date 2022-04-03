@@ -36,6 +36,7 @@ pub type Position = Vector3<f32>;
 pub type Size = Vector2<f32>;
 
 static NO_SIZE: Vector2<f32> = Vector2 {x: 0.0, y: 0.0};
+#[allow(dead_code)]
 static NO_POS: Vector3<f32> = Vector3 {x: 0.0, y: 0.0, z: 0.0};
 
 static WINDOW_WIDTH: u32 = 1200;
