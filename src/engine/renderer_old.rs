@@ -13,8 +13,8 @@ use image;
 use cgmath::prelude::*;
 use cgmath::{Matrix4, Vector4, Vector3, Vector2, Deg, vec4, vec3};
 
-const SCREEN_WIDTH: u32 = 800;
-const SCREEN_HEIGHT: u32 = 800;
+pub static SCREEN_WIDTH: u32 = 800;
+pub static SCREEN_HEIGHT: u32 = 800;
 
 fn read_shader(path: &str) -> String {
     std::fs::read_to_string(path)
@@ -283,6 +283,7 @@ impl Mesh {
 pub struct Sprite {
     mesh: Mesh,
     texture: Texture,
+    size: (u32, u32)
 }
 
 impl Sprite {
@@ -290,7 +291,8 @@ impl Sprite {
         let texture = Texture::new(path, filter);
         Sprite {
             mesh: Mesh::new(texture.get_size()),
-            texture: texture
+            texture: texture,
+            size: texture.get_size()
         }
     }
 }
@@ -316,7 +318,9 @@ impl Renderer {
         let proj: Matrix4<f32> = cgmath::ortho(0.0, SCREEN_WIDTH as f32, 0.0, SCREEN_HEIGHT as f32, 0.0, 100.0);
         let mut model: Matrix4<f32> = Matrix4::identity();
         model = model * Matrix4::<f32>::from_translation(position.clone());
-        model = model * Matrix4::<f32>::from_scale(size.x);
+        // model = model * Matrix4::<f32>::from_scale(size.x);
+        model[0][0] *= size.x;  // scale x 
+        model[1][1] *= size.y;  // scale y
 
 
         let mvp: Matrix4<f32> = proj * model;
