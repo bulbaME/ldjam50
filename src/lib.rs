@@ -1,12 +1,4 @@
 pub mod engine;
+pub mod game;
 
-pub enum MainMenu {
-    Main,
-    Settings,
-    Credits
-}
-
-pub enum State {
-    Game,
-    MainMenu(MainMenu)
-}
+use engine::*;

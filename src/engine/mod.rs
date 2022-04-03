@@ -28,7 +28,6 @@ pub use positioning::Positioning;
 use glfw::*;
 
 use cgmath::{Vector3, Vector2, Matrix4, vec3, vec2};
-use cgmath::prelude::*;
 
 use renderer::Renderer;
  
