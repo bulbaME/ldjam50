@@ -23,14 +23,14 @@ unsafe fn set_window_hints() {
     glfw::WindowHint::OpenGlProfile(glfw::OpenGlProfileHint::Core);
 }
 
-pub fn init<'a>() -> (Engine<'a>, EventHandler) {
-    let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS)
+pub fn init() -> (Engine, EventHandler) {
+    let glfw = glfw::init(glfw::FAIL_ON_ERRORS)
         .expect("Failed to initialize glfw");
 
    unsafe {
         set_window_hints();
     }
-
+ 
     let (mut window, events) = glfw.create_window(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE, glfw::WindowMode::Windowed)
         .expect("Failed to create window");
 
@@ -39,6 +39,12 @@ pub fn init<'a>() -> (Engine<'a>, EventHandler) {
     
     // Load OpenGL functions
     gl::load_with(|symb| window.get_proc_address(symb));
+
+    // Blending
+    unsafe {
+        gl::Enable(gl::BLEND);
+        gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
+    }
 
     // Return Engine and EventHandler
     (

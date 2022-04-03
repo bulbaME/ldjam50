@@ -1,6 +1,8 @@
 use gl::types::*;
 use std::ffi::CString;
 
+extern crate nalgebra_glm as glm;
+
 use cgmath::{Matrix4};
 use cgmath::prelude::*;
 
@@ -113,6 +115,19 @@ impl Shader {
             }
 
             gl::UniformMatrix4fv(loc, 1, gl::FALSE, mat4.as_ptr());
+        }
+    }
+
+    pub fn set_mat4_glm(&self, location: &str, mat4: &glm::Mat4) {
+        unsafe {
+            let location_ = CString::new(location).unwrap();
+            let loc = gl::GetUniformLocation(self.id, location_.as_ptr());
+
+            if loc == -1 {
+                println!("WARNING: `{}` is not a valid uniform location!", location);
+            }
+
+            gl::UniformMatrix4fv(loc, 1, gl::FALSE, &mat4[0]);
         }
     }
 }

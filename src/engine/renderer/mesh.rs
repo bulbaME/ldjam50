@@ -10,13 +10,14 @@ impl Mesh {
     pub fn new() -> Mesh {
 
         // Vertex data
-        let vertex_buffer_: [f32; 12] = [
-            0.0, 0.0, 0.0,
-            1.0, 0.0, 0.0,
-            1.0, 1.0, 0.0,
-            0.0, 1.0, 0.0
+        let vertex_buffer_: [f32; 16] = [
+            // position         // index
+            0.0, 0.0, 1.0,      0.0,
+            1.0, 0.0, 1.0,      1.0,
+            1.0, 1.0, 1.0,      2.0,
+            0.0, 1.0, 1.0,      3.0,
         ];
-        let vertex_size: usize = 3 * mem::size_of::<f32>(); 
+        let vertex_size: usize = 4 * mem::size_of::<f32>(); 
 
         // Index data
         let index_buffer_: [u32; 6] = [
@@ -47,6 +48,12 @@ impl Mesh {
                 vertex_size as i32, core::ptr::null()
             );
             gl::EnableVertexAttribArray(0);
+
+            gl::VertexAttribPointer(1, 1,
+                gl::FLOAT, gl::FALSE,
+                vertex_size as i32, (3 * mem::size_of::<f32>()) as *const _
+            );
+            gl::EnableVertexAttribArray(1);
 
             // Create EBO and send initial data, this data on the GPU won't be changed.
             gl::GenBuffers(1, &mut mesh.ebo);

@@ -1,7 +1,6 @@
 use super::*;
 
-use cgmath::prelude::*;
-use cgmath::{Matrix4, vec3};
+extern crate nalgebra_glm as glm;
 
 pub struct Renderer {}
 
@@ -17,29 +16,27 @@ impl Renderer {
     //     }
     // }
 
-    pub fn draw_quad(shader: &Shader, sprite: &Sprite, position: Position, size: Size, view: Matrix4<f32>) {
-        let position = vec3(
-            position.0 as f32, 
-            position.1 as f32, 
-            position.2 as f32
-        );
-
+    pub fn draw_sprite(sprite: &Sprite, vp: &Matrix4<f32>) {
         let texture = sprite.get_texture();
         let mesh = sprite.get_mesh();
+        let size = sprite.get_size();
+        let position = sprite.get_position();
+        let shader = sprite.get_shader();
 
-        // Bind the texture
+        // Bindings
         texture.bind(0);
+        shader.bind();
 
         // Calculate the MVP
         let proj: Matrix4<f32> = cgmath::ortho(0.0, WINDOW_WIDTH as f32, 0.0, WINDOW_HEIGHT as f32, 0.0, 100.0);
         let mut model = Matrix4::<f32>::identity();
-        model = model * Matrix4::from_translation(position);
+        model = model * Matrix4::from_translation(position.clone());
         // model = model * Matrix4::<f32>::from_scale(size.x);
-        model[0][0] *= size.0 as f32;  // scale x 
-        model[1][1] *= size.1 as f32;  // scale y
+        model.x.x *= size.x;  // scale x
+        model.y.y *= size.y;  // scale y
 
 
-        let mvp: Matrix4<f32> = proj * view * model;
+        let mvp: Matrix4<f32> = vp * model;
 
         // Set uniforms 
         shader.set_int("uTexture", 0); 
@@ -58,7 +55,105 @@ impl Renderer {
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
         }
 
-        // Unbind the texture
+        // Unbindings
         texture.unbind();
+        shader.unbind();
+    }
+ 
+    pub fn draw_text(text: &Text, vp: &Matrix4<f32>) {
+        let bitmap_font = text.get_font();
+        let shader = text.get_shader();
+        let mesh = text.get_mesh();
+        
+        let bitmap_size = bitmap_font.get_size();
+        let bitmap_width = bitmap_size.x;
+        let bitmap_height = bitmap_size.y;
+
+        let position = text.get_position();
+        let size = text.get_size();
+
+        // Bind bitmap texture
+        bitmap_font.bind(0);
+
+        // Bind default text shader
+        shader.bind();
+
+        // Const text params
+        let start_char = ' ' as u8;
+        let char_in_row = 18;
+
+        // Size in pixel
+        let char_width = 15.0;
+        let char_height = 21.0;
+
+        // Size in ratio
+        let char_r_width = char_width / bitmap_width; // value <-- 0.055
+        let char_r_height = char_height / bitmap_height; // value <-- 0.166
+
+        // Current text params
+        let mut advance: f32 = 0.0;
+
+        for c in text.get_text().as_bytes().iter() {
+            
+            // Get current char index
+            let current = c - start_char; // try checking table
+
+            // Position
+            let pos_x = ((current % char_in_row) as f32 * char_width) / bitmap_width as f32;
+            let pos_y = (bitmap_height - (((current / char_in_row) as f32 * char_height) + char_height)) / bitmap_height;
+            
+            // Set source rect
+            let x_ = pos_x + char_r_width;
+            let y_ = pos_y + char_r_height;
+            let source = Matrix4::<f32>::from_cols(
+                vec4(pos_x, x_, x_, pos_x),
+                vec4(pos_y, pos_y, y_, y_), 
+                vec4(0.0, 0.0, 0.0, 0.0),
+                vec4(0.0, 0.0, 0.0, 0.0)
+            );
+
+            // Draw the text
+            let mut model = Matrix4::<f32>::identity();
+            model = model * Matrix4::from_translation(vec3(position.x + advance, position.y, position.z));
+            model.x.x *= char_width * size.x;
+            model.y.y *= char_height * size.y;
+
+
+            // Create mvp
+            let mvp = vp * model;
+
+            // Set uniform
+            shader.set_mat4("uSource", &source);
+            shader.set_mat4("uMVP", &mvp);
+
+            shader.set_int("uTexture", 0);
+
+            unsafe {
+                // Bind the mesh
+                gl::BindVertexArray(mesh.vao);
+                gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, mesh.ebo);
+    
+                // Draw the quad
+                gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, core::ptr::null());
+    
+                // Unbind the mesh
+                gl::BindVertexArray(0);
+                gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
+            }
+            
+            advance += char_width * size.x;
+
+            let char_c: char = *c as char;
+            if char_c != ' ' || char_c != '!' || char_c != '.' || char_c != ',' {
+                advance += char_width * size.x * 0.16; 
+            }
+        }
+
+        bitmap_font.unbind();
+        shader.unbind();
+    }
+    
+    pub fn draw_particle() {
+
     }
 }

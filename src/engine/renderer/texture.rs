@@ -1,6 +1,8 @@
+use super::*;
+
 pub struct Texture {
     texture_id: u32,
-    size: (u32, u32)
+    size: Size
 }
 
 impl Texture {
@@ -13,7 +15,7 @@ impl Texture {
 
         let img = ImageReader::open(["data/textures/", path].concat()).expect("Failed to open image")
             .decode().expect("Failed to decode image")
-            .into_rgb8();
+            .into_rgba8();
         let img = image::imageops::flip_vertical(&img);
 
         (width, height) = img.dimensions();
@@ -25,8 +27,8 @@ impl Texture {
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, texture);
 
-            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);
-            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::CLAMP_TO_EDGE as i32);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::CLAMP_TO_EDGE as i32);
 
             let mipmap_filter = if filter == gl::LINEAR as i32 {
                 gl::LINEAR_MIPMAP_LINEAR as i32 
@@ -39,9 +41,9 @@ impl Texture {
 
             gl::TexImage2D(
                 gl::TEXTURE_2D, 0, 
-                gl::RGB as i32,
+                gl::RGBA8 as i32,
                 width as i32, height as i32, 
-                0, gl::RGB, 
+                0, gl::RGBA, 
                 gl::UNSIGNED_BYTE,
                 data.as_ptr().cast()
             );
@@ -53,7 +55,7 @@ impl Texture {
         // Return the texture
         Texture {
             texture_id: texture,
-            size: (width, height)
+            size: vec2(width as f32, height as f32)
         }
     }
 
@@ -70,7 +72,7 @@ impl Texture {
         }
     }
 
-    pub fn get_size(&self) -> (u32, u32) {
-        self.size
+    pub fn get_size(&self) -> &Size {
+        &(self.size)
     }
 }

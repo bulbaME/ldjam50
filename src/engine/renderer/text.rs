@@ -1,27 +1,36 @@
 use super::*;
 
-pub struct Sprite <'a> {
+pub struct Text <'a> {
     mesh: Mesh,
-    texture: Texture,
     size: Size,
+    font: Texture,
     position: Position,
-    shader: &'a Shader
+    shader: &'a Shader,
+    text: String
 }
 
-impl <'a> Sprite <'a> {
-    pub fn new<'b>(path: &str, filter: i32, shader: &'b Shader) -> Sprite<'b> {
-        let texture = Texture::new(path, filter);
-        Sprite {
+impl <'a> Text <'a> {
+    pub fn new<'b>(font: &str, text: &str, shader: &'b Shader) -> Text<'b> {
+        Text {
             mesh: Mesh::new(),
-            size: texture.get_size().clone(),
-            texture: texture,
+            size: vec2(1.0, 1.0),
+            font: Texture::new(font, gl::NEAREST as i32),
             position: vec3(0.0, 0.0, -1.0),
-            shader: shader
+            shader: shader,
+            text: text.to_string()
         }
     }
 
-    pub fn get_texture(&self) -> &Texture {
-        &(self.texture)
+    pub fn get_text(&self) -> &str {
+        &(self.text)
+    }
+
+    pub fn get_font(&self) -> &Texture {
+        &(self.font)
+    }
+
+    pub fn set_text(&mut self, text: &str) {
+        self.text = text.to_string();
     }
 
     pub fn get_mesh(&self) -> &Mesh {
@@ -33,7 +42,7 @@ impl <'a> Sprite <'a> {
     }
 }
 
-impl<'a> Positioning for Sprite<'a> {
+impl<'a> Positioning for Text<'a> {
     fn get_position(&self) -> &Position {
         &(self.position)
     }

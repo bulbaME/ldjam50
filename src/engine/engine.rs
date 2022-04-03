@@ -1,68 +1,39 @@
 use super::*;
+use std::time::SystemTime;
 
 use renderer::renderer::Renderer;
 
-use cgmath::{Matrix4, vec3};
-
-pub fn init<'a>(window: Window) -> Engine<'a> {
+pub fn init(window: Window) -> Engine {
     Engine {
-        window,
-        objects: vec![],
-        camera: (0, 0, 0),
-        shader: renderer::Shader::new("base.vert", "base.frag")
+        window: window,
+        time: SystemTime::now()
     }
 }
 
-pub struct Engine <'a> {
+pub struct Engine {
     window: Window,
-    objects: Vec<&'a Object>,
-    camera: Position,
-    shader: renderer::Shader
+    time: SystemTime
 }
 
-impl<'a> Engine <'a> {
-    pub fn bind_object(&mut self, object: &'a Object) {
-        self.objects.push(object);
-    }
-
-    pub fn tick(&mut self) {
-        self.update();
-        self.render();
-    }
-
-    fn render(&mut self) {
-        let view = Matrix4::<f32>::from_translation(vec3(
-            self.camera.0 as f32,
-            self.camera.1 as f32,
-            self.camera.2 as f32
-        ));
+impl Engine {
+    pub fn pre_render(&mut self) {
+        self.window.swap_buffers();
 
         unsafe {
             gl::ClearColor(0.12, 0.1, 0.24, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
+    }
 
-        self.shader.bind();
-
-        for o in &self.objects {
-            Renderer::draw_quad(
-                &(self.shader), 
-                o.get_sprite(), 
-                o.get_position(), 
-                o.get_size(), 
-                view
-            );
+    pub fn render_object(&self, object: &Object, vp: &Matrix4<f32>) {
+        match object {
+            Object::Sprite(s) => Renderer::draw_sprite(s, vp),
+            Object::Text(t) => Renderer::draw_text(t, vp),
+            Object::Particle(p) => Renderer::draw_particle() 
         }
-
-        self.window.swap_buffers();
     }
-
-    fn update(&self) {
-
-    }
-
     // engine state
-    pub fn is_working(&self) -> bool {
+    pub fn is_working(&self) -> bool { 
         !self.window.should_close()
     }
 
@@ -70,43 +41,16 @@ impl<'a> Engine <'a> {
         self.window.set_should_close(true);
     }
 
-    pub fn set_shader(&mut self, shader: renderer::Shader) {
-        self.shader = shader;
+    pub fn tick(&mut self) {
+        self.time = SystemTime::now()
     }
 
-
-    // camera movement
-    pub fn move_camera(&mut self, pos: Position) {
-        self.move_camera_x(pos.0);
-        self.move_camera_y(pos.1);
-        self.move_camera_z(pos.2);
+    pub fn get_frametime(&self) -> u32 {
+        self.time.elapsed().unwrap().as_nanos() as u32
     }
 
-    pub fn move_camera_x(&mut self, pos: i32) {
-        self.camera.0 += pos;
-    }
-
-    pub fn move_camera_y(&mut self, pos: i32) {
-        self.camera.1 += pos;
-    }
-
-    pub fn move_camera_z(&mut self, pos: i32) {
-        self.camera.2 += pos;
-    }
-
-    pub fn set_camera(&mut self, pos: Position) {
-        self.camera = pos;
-    }
-
-    pub fn set_camera_x(&mut self, pos: i32) {
-        self.camera.0 = pos;
-    }
-
-    pub fn set_camera_y(&mut self, pos: i32) {
-        self.camera.1 = pos;
-    }
-
-    pub fn set_camera_z(&mut self, pos: i32) {
-        self.camera.2 = pos;
-    }
+    pub fn get_cursor_pos(&mut self) -> Vector2<f32> {
+        let pos = self.window.get_cursor_pos();
+        vec2(pos.0 as f32, (pos.1 as f32 - 800.0) * -1.0)
+    } 
 }
