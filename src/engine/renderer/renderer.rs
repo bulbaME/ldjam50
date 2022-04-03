@@ -1,7 +1,5 @@
 use super::*;
 
-extern crate nalgebra_glm as glm;
-
 pub struct Renderer {}
 
 impl Renderer {
