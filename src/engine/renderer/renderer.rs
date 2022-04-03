@@ -26,7 +26,6 @@ impl Renderer {
         shader.bind();
 
         // Calculate the MVP
-        let proj: Matrix4<f32> = cgmath::ortho(0.0, WINDOW_WIDTH as f32, 0.0, WINDOW_HEIGHT as f32, 0.0, 100.0);
         let mut model = Matrix4::<f32>::identity();
         model = model * Matrix4::from_translation(position.clone());
         // model = model * Matrix4::<f32>::from_scale(size.x);

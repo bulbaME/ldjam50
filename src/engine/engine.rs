@@ -1,8 +1,6 @@
 use super::*;
 use std::time::SystemTime;
 
-use renderer::renderer::Renderer;
-
 pub fn init(window: Window) -> Engine {
     Engine {
         window: window,
@@ -29,7 +27,7 @@ impl Engine {
         match object {
             Object::Sprite(s) => Renderer::draw_sprite(s, vp),
             Object::Text(t) => Renderer::draw_text(t, vp),
-            Object::Particle(p) => Renderer::draw_particle() 
+            Object::Particle(_p) => Renderer::draw_particle() 
         }
     }
     // engine state
