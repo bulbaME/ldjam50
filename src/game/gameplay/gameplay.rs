@@ -22,6 +22,6 @@ impl Gameplay {
 
     pub fn update(&mut self, engine: &mut Engine) {
         self.counter += engine.get_frametime() as u128;
-        println!("{:.0}", self.counter as f64 / 1_000_000_000.0);
+        // println!("{:.0}", self.counter as f64 / 1_000_000_000.0);
     }
 }

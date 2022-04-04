@@ -12,6 +12,8 @@ fn main() {
     let sprite_shader = Shader::new("base.vert", "base.frag");
     let text_shader = Shader::new("text.vert", "text.frag");
 
+    engine.load_sound("test.wav", "blup");
+
     let mut game = Game::new(
         &mut engine, 
         &mut event_handler,
@@ -26,7 +28,7 @@ fn main() {
         for (_, event) in game.event_handler.get() {
             match event {
                 WindowEvent::Key(Key::Escape, _, Action::Press, _) => game.engine.stop_working(),
-                WindowEvent::Key(Key::Space, _, Action::Press, _) => println!("{}", game.engine.get_frametime()),
+                WindowEvent::Key(Key::Space, _, Action::Press, _) => game.engine.play_sound("blup"),
                 _ => ()
             }
         }

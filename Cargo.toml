@@ -9,7 +9,8 @@ image = "*"
 cgmath = "*"
 cstr = "*"
 nalgebra-glm  = "*"
-soloud = "1"
+rodio = "*"
+cpal = "*"
 
 [target.'cfg(not(target_os = "windows"))'.dependencies.glfw]
 git = "https://github.com/bjz/glfw-rs.git"
