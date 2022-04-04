@@ -6,7 +6,8 @@ pub struct Text <'a> {
     font: Texture,
     position: Position,
     shader: &'a Shader,
-    text: String
+    text: String,
+    color: Vector4<f32>
 }
 
 impl <'a> Text <'a> {
@@ -17,7 +18,8 @@ impl <'a> Text <'a> {
             font: Texture::new(font, gl::NEAREST as i32),
             position: vec3(0.0, 0.0, -1.0),
             shader: shader,
-            text: text.to_string()
+            text: text.to_string(),
+            color: vec4(1.0, 1.0, 1.0, 1.0)
         }
     }
 
@@ -40,6 +42,14 @@ impl <'a> Text <'a> {
     pub fn get_shader(&self) -> &Shader {
         self.shader
     }
+
+    pub fn get_color(&self) -> &Vector4<f32> {
+        &(self.color)
+    }
+
+    pub fn set_color(&mut self, col: &Vector4<f32>) {
+        self.color = col.clone();
+    } 
 }
 
 impl<'a> Positioning for Text<'a> {

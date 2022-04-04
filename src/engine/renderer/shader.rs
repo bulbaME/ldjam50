@@ -1,8 +1,8 @@
 use gl::types::*;
 use std::ffi::CString;
 
-use cgmath::{Matrix4};
-use cgmath::prelude::*;
+use super::*;
+use std::mem;
 
 fn read_shader(path: &str) -> String {
     std::fs::read_to_string(["data/shaders/", path].concat())
@@ -67,6 +67,12 @@ unsafe fn create_shader_program(vertex: &str, fragment: &str) -> u32 {
     shader
 }
 
+pub enum SetType <'a> {
+    Int(i32),
+    Mat4(&'a Matrix4<f32>),
+    Vec4(&'a Vector4<f32>)
+}
+
 pub struct Shader {
     id: u32
 }
@@ -90,7 +96,7 @@ impl Shader {
         }
     }
 
-    pub fn set_int(&self, location: &'static str, value: i32) {
+    pub fn set(&self, location: &'static str, value: SetType) {
         unsafe {
             let location_ = CString::new(location).unwrap();
             let loc = gl::GetUniformLocation(self.id, location_.as_ptr());
@@ -99,20 +105,11 @@ impl Shader {
                 println!("WARNING: `{}` is not a valid uniform location!", location);
             }
 
-            gl::Uniform1i(loc, value);
-        }
-    }
-
-    pub fn set_mat4(&self, location: &str, mat4: &Matrix4<f32>) {
-        unsafe {
-            let location_ = CString::new(location).unwrap();
-            let loc = gl::GetUniformLocation(self.id, location_.as_ptr());
-
-            if loc == -1 {
-                println!("WARNING: `{}` is not a valid uniform location!", location);
+            match value {
+                SetType::Int(v) => gl::Uniform1i(loc, v),
+                SetType::Mat4(v) => gl::UniformMatrix4fv(loc, 1, gl::FALSE, v.as_ptr()),
+                SetType::Vec4(v) => gl::Uniform4fv(loc, 1, v.as_ptr())
             }
-
-            gl::UniformMatrix4fv(loc, 1, gl::FALSE, mat4.as_ptr());
         }
     }
 }

@@ -9,9 +9,15 @@ use ldjam50::game::*;
 fn main() {
     let (mut engine, mut event_handler) = init();
 
-    let shader = Shader::new("base.vert", "base.frag");
+    let sprite_shader = Shader::new("base.vert", "base.frag");
+    let text_shader = Shader::new("text.vert", "text.frag");
 
-    let mut game = Game::new(&mut engine, &mut event_handler, &shader);
+    let mut game = Game::new(
+        &mut engine, 
+        &mut event_handler,
+        &sprite_shader, 
+        &text_shader
+    );
 
     #[allow(unused_labels)]
     'main_loop: while game.engine.is_working() {    

@@ -1,4 +1,5 @@
 use super::*;
+use shader::SetType;
 
 pub struct Renderer {}
 
@@ -36,8 +37,8 @@ impl Renderer {
         let mvp: Matrix4<f32> = vp * model;
 
         // Set uniforms 
-        shader.set_int("uTexture", 0); 
-        shader.set_mat4("uMVP", &mvp); 
+        shader.set("uTexture", SetType::Int(0)); 
+        shader.set("uMVP", SetType::Mat4(&mvp)); 
         
         unsafe {
             // Bind the mesh
@@ -120,10 +121,10 @@ impl Renderer {
             let mvp = vp * model;
 
             // Set uniform
-            shader.set_mat4("uSource", &source);
-            shader.set_mat4("uMVP", &mvp);
-
-            shader.set_int("uTexture", 0);
+            shader.set("uColor", SetType::Vec4(text.get_color()));
+            shader.set("uSource", SetType::Mat4(&source));
+            shader.set("uMVP", SetType::Mat4(&mvp));
+            shader.set("uTexture", SetType::Int(0));
 
             unsafe {
                 // Bind the mesh
@@ -131,7 +132,7 @@ impl Renderer {
                 gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, mesh.ebo);
     
                 // Draw the quad
-                gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, core::ptr::null());
+                gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, 0 as *const _);
     
                 // Unbind the mesh
                 gl::BindVertexArray(0);

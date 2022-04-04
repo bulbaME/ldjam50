@@ -1,6 +1,7 @@
 extern crate gl;
 extern crate glfw;
 extern crate cgmath;
+extern crate soloud;
 
 pub mod engine;
 pub mod object;
@@ -27,7 +28,7 @@ pub use positioning::Positioning;
 
 use glfw::*;
 
-use cgmath::{Vector3, Vector2, Matrix4, vec3, vec2};
+use cgmath::{Vector3, Vector2, Matrix4, vec3, vec2, Vector4};
 
 use renderer::Renderer;
  
