@@ -1,13 +1,13 @@
 use super::*;
 
-enum GameState {
+pub enum GameState {
     Menu,
     Game
 }
 
 pub struct Game<'a> {
     main_menu: MainMenu<'a>,
-    game: Gameplay,
+    game: Gameplay<'a>,
     pub engine: &'a mut Engine,
     pub event_handler: &'a mut EventHandler,
     pub camera: Camera,
@@ -26,7 +26,7 @@ impl <'a> Game <'a> {
         text.set_color(&vec4(1.0, 1.0, 1.0, 0.5));
         Game {
             main_menu: MainMenu::new(sprite_shader),
-            game: Gameplay::new(),
+            game: Gameplay::new(sprite_shader),
             engine: engine,
             event_handler: event_handler,
             camera: Camera::new(),
@@ -38,6 +38,7 @@ impl <'a> Game <'a> {
     pub fn update(&mut self) {
         self.engine.pre_render();
         let vp = self.camera.get_vp();
+        let events = self.event_handler.get();
 
         // fps meter
         let frame_time = self.engine.get_frametime() as f64 / 1_000_000.0; // in milliseconds
@@ -46,10 +47,16 @@ impl <'a> Game <'a> {
         self.fps_meter.set_text(&fps);
         let fps_meter = Object::Text(&(self.fps_meter));
 
-        self.main_menu.update(self.engine, &vp);
-        self.game.update(self.engine);
+        match self.state {
+            GameState::Menu => self.main_menu.update(self.engine, &events, &vp, &mut(self.state)),
+            GameState::Game => self.game.update(self.engine, &events, &vp, &mut(self.state))
+        }
 
         self.engine.render_object(&fps_meter, &vp);
         self.engine.tick();
+    }
+
+    pub fn start_game() {
+
     }
 }

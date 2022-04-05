@@ -2,7 +2,6 @@ extern crate glfw;
 extern crate gl;
 extern crate cgmath;
 
-use glfw::{Key, Action, WindowEvent};
 use ldjam50::engine::*;
 use ldjam50::game::*;
 
@@ -25,13 +24,13 @@ fn main() {
     'main_loop: while game.engine.is_working() {    
         game.update();
 
-        for (_, event) in game.event_handler.get() {
-            match event {
-                WindowEvent::Key(Key::Escape, _, Action::Press, _) => game.engine.stop_working(),
-                WindowEvent::Key(Key::Space, _, Action::Press, _) => game.engine.play_sound("blup"),
-                _ => ()
-            }
-        }
+        // for event in game.event_handler.get() {
+        //     match event {
+        //         WindowEvent::Key(Key::Escape, _, Action::Press, _) => game.engine.stop_working(),
+        //         WindowEvent::Key(Key::Space, _, Action::Press, _) => game.engine.play_sound("blup"),
+        //         _ => ()
+        //     }
+        // }
 
     }
 }

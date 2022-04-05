@@ -21,8 +21,9 @@ impl EventHandler {
         self.glfw.poll_events();
     }
 
-    pub fn get(&mut self) -> glfw::FlushedMessages<'_, (f64, WindowEvent)> {
+    pub fn get(&mut self) -> Vec<WindowEvent> {
         self.pull();
         glfw::flush_messages(&self.events)
+            .map(|v| v.1).collect()
     }
 }

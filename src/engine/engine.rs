@@ -16,15 +16,17 @@ pub fn init(window: Window) -> Engine {
         window: window,
         time: SystemTime::now(),
         sounds: HashMap::new(),
-        sound_streams: vec![]
+        sound_streams: vec![],
+        mouse_buttons: [false; 8]
     }
 }
 
 pub struct Engine {
-    window: Window,
+    pub window: Window,
     time: SystemTime,
     sounds: HashMap<&'static str, String>,
-    sound_streams: Vec<rodio::OutputStream>
+    sound_streams: Vec<rodio::OutputStream>,
+    mouse_buttons: [bool; 8]
 }
 
 impl Engine {
@@ -54,7 +56,16 @@ impl Engine {
     }
 
     pub fn tick(&mut self) {
-        self.time = SystemTime::now()
+        for i in 0..8 {
+            let button = glfw::MouseButton::from_i32(i).unwrap();
+            self.mouse_buttons[i as usize] = if let Action::Press = self.window.get_mouse_button(button) {
+                true
+            } else {
+                false
+            };
+        }
+
+        self.time = SystemTime::now();
     }
 
     pub fn get_frametime(&self) -> u32 {
@@ -65,6 +76,15 @@ impl Engine {
         let pos = self.window.get_cursor_pos();
         vec2(pos.0 as f32, (pos.1 as f32 - 800.0) * -1.0)
     } 
+
+    pub fn get_mouse_press(&self, i: i32) -> bool {
+        let button = glfw::MouseButton::from_i32(i).unwrap();
+        self.mouse_buttons[i as usize] && if let Action::Release = self.window.get_mouse_button(button) {
+            true
+        } else {
+            false
+        }
+    }
 
     pub fn load_sound(&mut self, path: &'static str, name: &'static str) {
         self.sounds.insert(name, ["./data/sounds/", path].concat());
