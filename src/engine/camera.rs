@@ -16,6 +16,10 @@ impl Camera {
     pub fn get_vp(&self) -> Matrix4<f32> {
         self.projection * Matrix4::<f32>::from_translation(self.position.clone())
     }
+
+    pub fn get_p(&self) -> &Matrix4<f32> {
+        &(self.projection)
+    }
 }
 
 impl Positioning for Camera {

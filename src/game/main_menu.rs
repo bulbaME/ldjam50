@@ -72,8 +72,8 @@ impl <'a> MainMenu <'a> {
         }
         self.bg.set_position_y(-bg_pos_y);
         
-        let bg = Object::Sprite(&self.bg);
-        engine.render_object(&bg, vp);
+        let mut bg = Object::Sprite(&self.bg);
+        engine.render_object(&mut bg, vp);
         match self.state {
             MenuState::Main => self.main.update(engine, events, vp, &mut(self.state), g_state),
             MenuState::Settings => self.settings.update(engine, events, vp, &mut(self.state)),
@@ -97,39 +97,39 @@ impl <'a> Main <'a> {
         let mouse_down = engine.get_mouse_press(0);
 
         if cursor_vec3.collides(&(self.b1)) {
-            engine.render_object(&Object::Sprite(&(self.b1.focused)), vp);
+            engine.render_object(&mut Object::Sprite(&(self.b1.focused)), vp);
             if mouse_down {
                 *g_state = game::GameState::Game;
             }
         } else {
-            engine.render_object(&Object::Sprite(&(self.b1.unfocused)), vp);
+            engine.render_object(&mut Object::Sprite(&(self.b1.unfocused)), vp);
         }
 
         if cursor_vec3.collides(&(self.b2)) {
-            engine.render_object(&Object::Sprite(&(self.b2.focused)), vp);
+            engine.render_object(&mut Object::Sprite(&(self.b2.focused)), vp);
             if mouse_down {
                 *m_state = MenuState::Settings;
             }
         } else {
-            engine.render_object(&Object::Sprite(&(self.b2.unfocused)), vp);
+            engine.render_object(&mut Object::Sprite(&(self.b2.unfocused)), vp);
         }
 
         if cursor_vec3.collides(&(self.b3)) {
-            engine.render_object(&Object::Sprite(&(self.b3.focused)), vp);
+            engine.render_object(&mut Object::Sprite(&(self.b3.focused)), vp);
             if mouse_down {
                 *m_state = MenuState::Credits;
             }
         } else {
-            engine.render_object(&Object::Sprite(&(self.b3.unfocused)), vp);
+            engine.render_object(&mut Object::Sprite(&(self.b3.unfocused)), vp);
         }
 
         if cursor_vec3.collides(&(self.b4)) {
-            engine.render_object(&Object::Sprite(&(self.b4.focused)), vp);
+            engine.render_object(&mut Object::Sprite(&(self.b4.focused)), vp);
             if mouse_down {
                 engine.stop_working();
             }
         } else {
-            engine.render_object(&Object::Sprite(&(self.b4.unfocused)), vp);
+            engine.render_object(&mut Object::Sprite(&(self.b4.unfocused)), vp);
         }
     }
 }
@@ -152,12 +152,12 @@ impl <'a> Settings <'a> {
         }
 
         if cursor_vec3.collides(&(self.b1)) {
-            engine.render_object(&Object::Sprite(&(self.b1.focused)), vp);
+            engine.render_object(&mut Object::Sprite(&(self.b1.focused)), vp);
             if mouse_down {
                 *m_state = MenuState::Main;
             }
         } else {
-            engine.render_object(&Object::Sprite(&(self.b1.unfocused)), vp);
+            engine.render_object(&mut Object::Sprite(&(self.b1.unfocused)), vp);
         }
     }
 }

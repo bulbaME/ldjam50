@@ -11,7 +11,8 @@ pub struct Gameplay <'a> {
     counter: u128,   // nanoseconds
     bg: [Sprite<'a>; 4],
     camera: Camera,
-    e: Enemy<'a>
+    e: Enemy<'a>,
+    frame: Sprite<'a>
 }
 
 impl <'a> Gameplay <'a> {
@@ -30,13 +31,18 @@ impl <'a> Gameplay <'a> {
         e.set_size(&vec2(200.0, 200.0));
         e.set_position(&vec3(1500.0, 200.0, -1.0));
 
+        let mut frame = Sprite::new("frame2.png", gl::NEAREST as i32, sprite_shader);
+        frame.set_position(&vec3(800.0, 500.0, -1.0));
+        frame.set_size(&vec2(128.0, 128.0));
+
         Gameplay {
             paused: false,
             state: GameState::Backstory,
             counter: 0,
             bg: [s1, s2, s3, s4],
             camera: Camera::new(),
-            e: e
+            e: e,
+            frame: frame
         }
     }
 
@@ -79,13 +85,16 @@ impl <'a> Gameplay <'a> {
             self.bg[3].set_position_x(-bg_pos_x - self.bg[0].get_size().x / 2.0 + 450.0);
         }
 
+        let proj = self.camera.get_p();
         let vp = self.camera.get_vp();
 
         for bg in self.bg.iter().rev() {
-            let object = Object::Sprite(bg);
-            engine.render_object(&object, &vp);
+            let mut object = Object::Sprite(bg);
+            engine.render_object(&mut object, &vp);
         }
 
+        let mut frame = Object::Sprite(&(self.frame));
+        engine.render_object(&mut frame, proj);
         self.e.update(engine, &vp);
 
         self.counter += engine.get_frametime() as u128;

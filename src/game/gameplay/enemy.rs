@@ -1,17 +1,19 @@
 use super::*;
 
-static FRAME_TIME: u64 = 150; // milliseconds
+static FRAME_TIME: u64 = 100; // milliseconds
 
 enum Animation {
     Move,
     Fire,
-    Die
+    Die,
+    Stop
 }
 
 pub struct Enemy <'a> {
-    anim_move: [Sprite<'a>; 3],
-    anim_fire: [Sprite<'a>; 10],
+    anim_move: [Sprite<'a>; 1],
+    anim_fire: [Sprite<'a>; 11],
     anim_die: [Sprite<'a>; 10],
+    anim_stop: [Sprite<'a>; 6],
     counter: i32,
     anim: Animation,
     hp: i32,
@@ -26,9 +28,8 @@ pub struct Enemy <'a> {
 impl <'a> Enemy <'a> {
     pub fn new(shader: &'a Shader) -> Enemy {
         let anim_move = [
-            Sprite::new("em_1.png", gl::NEAREST as i32, shader),
-            Sprite::new("em_2.png", gl::NEAREST as i32, shader),
-            Sprite::new("em_3.png", gl::NEAREST as i32, shader)
+            Sprite::new("em_6.png", gl::NEAREST as i32, shader),
+            // Sprite::new("em_2.png", gl::NEAREST as i32, shader),
         ];
 
         let anim_fire = [
@@ -41,7 +42,8 @@ impl <'a> Enemy <'a> {
             Sprite::new("ef_7.png", gl::NEAREST as i32, shader),
             Sprite::new("ef_8.png", gl::NEAREST as i32, shader),
             Sprite::new("ef_9.png", gl::NEAREST as i32, shader),
-            Sprite::new("ef_10.png", gl::NEAREST as i32, shader)
+            Sprite::new("ef_10.png", gl::NEAREST as i32, shader),
+            Sprite::new("ef_11.png", gl::NEAREST as i32, shader)
         ];
 
         let anim_die = [
@@ -57,10 +59,20 @@ impl <'a> Enemy <'a> {
             Sprite::new("ed_10.png", gl::NEAREST as i32, shader)
         ];
 
-        Enemy {
+        let anim_stop = [
+            Sprite::new("em_6.png", gl::NEAREST as i32, shader),
+            Sprite::new("em_5.png", gl::NEAREST as i32, shader),
+            Sprite::new("em_4.png", gl::NEAREST as i32, shader),
+            Sprite::new("em_3.png", gl::NEAREST as i32, shader),
+            Sprite::new("em_2.png", gl::NEAREST as i32, shader),
+            Sprite::new("em_1.png", gl::NEAREST as i32, shader)
+        ];
+
+        let mut enemy = Enemy {
             anim_move: anim_move,
             anim_fire: anim_fire,
             anim_die: anim_die,
+            anim_stop: anim_stop,
             counter: 0,
             anim: Animation::Move,
             hp: 3,
@@ -70,7 +82,11 @@ impl <'a> Enemy <'a> {
             size: vec2(80.0, 80.0),
             position: vec3(0.0, 0.0, -1.0),
             dead: false
-        }
+        };
+
+        enemy.set_size(&vec2(320.0, 320.0));
+
+        enemy
     }
 
     pub fn damage(&mut self) {
@@ -78,6 +94,7 @@ impl <'a> Enemy <'a> {
     }
 
     fn set_animation(&mut self, anim: Animation) {
+        self.counter = 0;
         self.anim = anim;
     }
 
@@ -106,35 +123,44 @@ impl <'a> Enemy <'a> {
             match self.anim {
                 Animation::Move => {
                     self.counter += 1;
-                    if self.counter == (self.anim_move.len()-1) as i32 {
+                    if self.counter == self.anim_move.len() as i32 {
                         self.counter = 0;
                     }
                 },
 
                 Animation::Fire => {
                     self.counter += 1;
-                    if self.counter == (self.anim_fire.len()-1) as i32 {
+                    if self.counter == self.anim_fire.len() as i32 {
                         self.counter = 0;
                     }
                 },
 
                 Animation::Die => {
                     self.counter += 1;
-                    if self.counter == (self.anim_die.len()-1) as i32 {
+                    if self.counter == self.anim_die.len() as i32 {
                         self.dead = true;
+                        return;
                     }
+                },
+
+                Animation::Stop => {
+                    self.counter += 1;
+                    if self.counter == self.anim_stop.len() as i32 {
+                        self.set_animation(Animation::Die);
+                    }  
                 }
             }
         }
 
-        let object: Object;
+        let mut object: Object;
         match self.anim {
             Animation::Move => object = Object::Sprite(&(self.anim_move[self.counter as usize])),
             Animation::Fire => object = Object::Sprite(&(self.anim_fire[self.counter as usize])),
             Animation::Die => object = Object::Sprite(&(self.anim_die[self.counter as usize])),
+            Animation::Stop => object = Object::Sprite(&(self.anim_stop[self.counter as usize])),
         }
 
-        engine.render_object(&object, vp);
+        engine.render_object(&mut object, vp);
 
         // movement
         if let Animation::Move = self.anim {
@@ -145,7 +171,11 @@ impl <'a> Enemy <'a> {
         }
 
         if self.hp <= 0 {
-            self.set_animation(Animation::Die);
+            match self.anim {
+                Animation::Die => (),
+                Animation::Stop => (),
+                _ => self.set_animation(Animation::Stop)
+            }
         }
     }
 }
@@ -163,6 +193,7 @@ impl <'a> Positioning for Enemy<'a> {
         self.anim_die.iter_mut().for_each(|s| (*s).set_size(size));
         self.anim_fire.iter_mut().for_each(|s| (*s).set_size(size));
         self.anim_move.iter_mut().for_each(|s| (*s).set_size(size));
+        self.anim_stop.iter_mut().for_each(|s| (*s).set_size(size));
         self.size = size.clone();
     }
 
@@ -170,6 +201,7 @@ impl <'a> Positioning for Enemy<'a> {
         self.anim_die.iter_mut().for_each(|s| (*s).set_position(pos));
         self.anim_fire.iter_mut().for_each(|s| (*s).set_position(pos));
         self.anim_move.iter_mut().for_each(|s| (*s).set_position(pos));
+        self.anim_stop.iter_mut().for_each(|s| (*s).set_position(pos));
         self.position = pos.clone();
     }
 }

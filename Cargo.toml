@@ -11,6 +11,7 @@ cstr = "*"
 nalgebra-glm  = "*"
 rodio = "*"
 cpal = "*"
+rand = "*"
 
 [target.'cfg(not(target_os = "windows"))'.dependencies.glfw]
 git = "https://github.com/bjz/glfw-rs.git"

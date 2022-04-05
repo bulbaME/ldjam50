@@ -1,6 +1,7 @@
 extern crate gl;
 extern crate glfw;
 extern crate cgmath;
+extern crate rand;
 
 pub mod engine;
 pub mod object;

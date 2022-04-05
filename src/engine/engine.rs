@@ -15,6 +15,7 @@ pub fn init(window: Window) -> Engine {
     Engine {
         window: window,
         time: SystemTime::now(),
+        frame_time: 0,
         sounds: HashMap::new(),
         sound_streams: vec![],
         mouse_buttons: [false; 8]
@@ -24,6 +25,7 @@ pub fn init(window: Window) -> Engine {
 pub struct Engine {
     pub window: Window,
     time: SystemTime,
+    frame_time: u32,
     sounds: HashMap<&'static str, String>,
     sound_streams: Vec<rodio::OutputStream>,
     mouse_buttons: [bool; 8]
@@ -39,11 +41,11 @@ impl Engine {
         }
     }
 
-    pub fn render_object(&self, object: &Object, vp: &Matrix4<f32>) {
+    pub fn render_object(&mut self, object: &mut Object, vp: &Matrix4<f32>) {
         match object {
             Object::Sprite(s) => Renderer::draw_sprite(s, vp),
             Object::Text(t) => Renderer::draw_text(t, vp),
-            Object::Particle(_p) => Renderer::draw_particle() 
+            Object::Particle(p) => p.render(self, vp)
         }
     }
     // engine state
@@ -65,11 +67,12 @@ impl Engine {
             };
         }
 
+        self.frame_time = self.time.elapsed().unwrap().as_nanos() as u32;
         self.time = SystemTime::now();
     }
 
     pub fn get_frametime(&self) -> u32 {
-        self.time.elapsed().unwrap().as_nanos() as u32
+        self.frame_time
     }
 
     pub fn get_cursor_pos(&mut self) -> Vector2<f32> {

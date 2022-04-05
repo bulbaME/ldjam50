@@ -150,8 +150,4 @@ impl Renderer {
         bitmap_font.unbind();
         shader.unbind();
     }
-    
-    pub fn draw_particle() {
-
-    }
 }

@@ -45,14 +45,14 @@ impl <'a> Game <'a> {
         let fps = (1000.0 / frame_time) as i32;
         let fps = fps.to_string();
         self.fps_meter.set_text(&fps);
-        let fps_meter = Object::Text(&(self.fps_meter));
+        let mut fps_meter = Object::Text(&(self.fps_meter));
 
         match self.state {
             GameState::Menu => self.main_menu.update(self.engine, &events, &vp, &mut(self.state)),
             GameState::Game => self.game.update(self.engine, &events, &vp, &mut(self.state))
         }
 
-        self.engine.render_object(&fps_meter, &vp);
+        self.engine.render_object(&mut fps_meter, &vp);
         self.engine.tick();
     }
 

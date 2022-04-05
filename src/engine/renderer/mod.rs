@@ -15,6 +15,6 @@ pub use particle::Particle;
 pub use mesh::Mesh;
 
 use cgmath::prelude::*;
-use cgmath::{Matrix4, vec3, vec2, vec4, Vector4};
+use cgmath::{Matrix4, vec3, vec2, vec4, Vector4, Vector2, Vector3};
 
 use super::*;
