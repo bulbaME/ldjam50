@@ -53,7 +53,7 @@ impl <'a> Backstory <'a> {
 
         for event in events {
             if let WindowEvent::Key(Key::Space, _, Action::Press, _) = event {
-                self.next_state(engine);        
+                *g_state = gameplay::GameState::Gameplay;
             }
         }
 
@@ -66,12 +66,6 @@ impl <'a> Backstory <'a> {
 
         if self.state < 2 {
             engine.render_object(&mut Object::Sprite(&(self.skip)), &vp);
-        }
-    }
-
-    fn next_state(&mut self, engine: &mut Engine) {
-        while self.state == 0 {
-            self.next_char(true, engine);
         }
     }
 

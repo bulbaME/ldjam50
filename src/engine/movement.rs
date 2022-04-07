@@ -24,12 +24,12 @@ impl <T: Positioning> Movement for T {
     
     fn move_position_y(&mut self, pos: f32) {
         let prev_pos = self.get_position()[1];
-        self.set_position_x(prev_pos + pos);
+        self.set_position_y(prev_pos + pos);
     }
 
     fn move_position_z(&mut self, pos: f32) {
         let prev_pos = self.get_position()[2];
-        self.set_position_x(prev_pos + pos);
+        self.set_position_z(prev_pos + pos);
     }
 
     fn set_position_x(&mut self, pos: f32) {

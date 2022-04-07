@@ -11,7 +11,8 @@ pub struct MainMenu <'a> {
     main: Main<'a>,
     settings: Settings<'a>,
     credits: Credits<'a>,
-    pub state: MenuState
+    pub state: MenuState,
+    pub cred_restart: bool
 }
 
 impl <'a> MainMenu <'a> {
@@ -64,7 +65,6 @@ impl <'a> MainMenu <'a> {
 
         let mut s = Sprite::new("credits.png", gl::NEAREST as i32, shader, false);
         s.set_size(&vec2(675.0, 3060.0));
-        s.set_position(&vec3(263.0, 0.0, -1.0));
 
         let credits = Credits {
             s: s,
@@ -76,7 +76,8 @@ impl <'a> MainMenu <'a> {
             main: main,
             settings: settings,
             state: MenuState::Main,
-            credits: credits
+            credits: credits,
+            cred_restart: true
         }
     }
 
@@ -101,9 +102,9 @@ impl <'a> MainMenu <'a> {
         let mut bg = Object::Sprite(&self.bg);
         engine.render_object(&mut bg, vp);
         match self.state {
-            MenuState::Main => self.main.update(engine, events, vp, &mut(self.state), g_state),
+            MenuState::Main => self.main.update(engine, events, vp, &mut(self.state), g_state, &mut(self.cred_restart)),
             MenuState::Settings => self.settings.update(engine, events, vp, &mut(self.state)),
-            MenuState::Credits => self.credits.update(engine, &mut (self.state), events, vp)
+            MenuState::Credits => self.credits.update(engine, &mut (self.state), events, vp, &mut(self.cred_restart))
         }
     }
 }
@@ -116,7 +117,7 @@ pub struct Main <'a> {
 }
 
 impl <'a> Main <'a> {
-    pub fn update(&mut self, engine: &mut Engine, _events: &EventT, vp: &Matrix4<f32>, m_state: &mut MenuState, g_state: &mut game::GameState) {
+    pub fn update(&mut self, engine: &mut Engine, _events: &EventT, vp: &Matrix4<f32>, m_state: &mut MenuState, g_state: &mut game::GameState, cr: &mut bool) {
         let cursor = engine.get_cursor_pos();
         let cursor_vec3 = vec3(cursor.x, cursor.y, 0.0);
 
@@ -144,6 +145,7 @@ impl <'a> Main <'a> {
             engine.render_object(&mut Object::Sprite(&(self.b3.focused)), vp);
             if mouse_down {
                 *m_state = MenuState::Credits;
+                *cr = true;
             }
         } else {
             engine.render_object(&mut Object::Sprite(&(self.b3.unfocused)), vp);
@@ -217,19 +219,24 @@ struct Credits<'a> {
 }
 
 impl <'a> Credits <'a> {
-    pub fn update(&mut self, engine: &mut Engine, menu_state: &mut MenuState, events: &EventT, vp: &Matrix4<f32>) {
+    pub fn update(&mut self, engine: &mut Engine, menu_state: &mut MenuState, events: &EventT, vp: &Matrix4<f32>, cred_restart: &mut bool) {
         if self.scroll_timer < 0 {
-            self.scroll_timer = 1_000_000 * 100;
+            self.scroll_timer = 1_000_000 * 20;
             self.s.move_position_y(1.0);
         }
 
+        if *cred_restart {
+            self.s.set_position(&vec3(263.0, -3020.0, -1.0));
+            *cred_restart = false;
+        }
+
         for event in events {
-            if let WindowEvent::Key(Key::Escape, _, Action::Press, _) = event {
+            if let WindowEvent::Key(_, _, Action::Press, _) = event {
                 *menu_state = MenuState::Main;
             }
         }
 
-        if self.s.get_position().y > 2000.0 {
+        if self.s.get_position().y > 1000.0 {
             *menu_state = MenuState::Main;
         }
 

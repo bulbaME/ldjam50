@@ -58,7 +58,7 @@ impl <'a> Game <'a> {
 
         match self.state {
             GameState::Menu => self.main_menu.update(self.engine, &events, &vp, &mut(self.state)),
-            GameState::Game => self.game.update(self.engine, &events, &mut(self.state), &mut(self.main_menu.state))
+            GameState::Game => self.game.update(self.engine, &events, &mut(self.state), &mut(self.main_menu.state), &mut(self.main_menu.cred_restart))
         }
 
         self.engine.render_object(&mut fps_meter, &vp);

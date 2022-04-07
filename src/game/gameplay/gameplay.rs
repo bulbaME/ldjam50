@@ -145,7 +145,8 @@ impl <'a> Gameplay <'a> {
         engine: &mut Engine, 
         events: &EventT, 
         g_state: &mut game::GameState,
-        m_state: &mut main_menu::MenuState
+        m_state: &mut main_menu::MenuState,
+        cr: &mut bool
     ) {
         for event in events {
             if let WindowEvent::Key(Key::Escape, _, Action::Press, _) = event {
@@ -200,6 +201,7 @@ impl <'a> Gameplay <'a> {
                     if let WindowEvent::Key(_, _, Action::Press, _) = event {
                         self.restart();
                         self.state = GameState::Gameplay;
+                        *cr = true;
                         *m_state = main_menu::MenuState::Credits;
                         *g_state = game::GameState::Menu;
                     }
@@ -290,8 +292,11 @@ impl <'a> Gameplay <'a> {
 
                 3 => {
                     if self.energy >= 20.0 {
+                        if over_sapling {
+                            self.water += 20.0;
+                        }
+    
                         self.energy -= 20.0;
-                        self.water += 20.0;
                         if self.water > 100.0 {
                             self.water = 100.0;
                         }
@@ -306,7 +311,10 @@ impl <'a> Gameplay <'a> {
                 4 => {
                     if self.energy >= 40.0 {
                         self.energy -= 40.0;
-                        self.growth += 40.0;
+                        if over_sapling {
+                            self.growth += 40.0;
+                        }
+
                         if self.growth > 100.0 {
                             self.growth = 100.0;
                         }
@@ -321,6 +329,10 @@ impl <'a> Gameplay <'a> {
                 _ => ()
             }
         }
+
+        if self.sapling_hp < 0.0 {
+            self.state = GameState::Lost;
+        }        
 
         // spawn enemy
         if self.enemy_timer < 0 {
