@@ -25,10 +25,11 @@ pub use renderer::Text;
 pub use renderer::Particle;
 pub use collisions::Collision;
 pub use positioning::Positioning;
+pub use renderer::particle;
 
 use glfw::*;
 
-use cgmath::{Vector3, Vector2, Matrix4, vec3, vec2, Vector4};
+use cgmath::{Vector3, Vector2, Matrix4, vec3, vec2};
 
 use renderer::Renderer;
  
@@ -41,5 +42,5 @@ static NO_POS: Vector3<f32> = Vector3 {x: 0.0, y: 0.0, z: 0.0};
 
 pub static WINDOW_WIDTH: u32 = 1200;
 pub static WINDOW_HEIGHT: u32 = 800;
-pub static WINDOW_TITLE: &str = "LD50 Game";
+pub static WINDOW_TITLE: &str = "LUMBERJACK";
 

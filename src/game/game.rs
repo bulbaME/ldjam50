@@ -20,13 +20,22 @@ impl <'a> Game <'a> {
         engine: &'a mut Engine, 
         event_handler: &'a mut EventHandler, 
         sprite_shader: &'a Shader,
-        text_shader: &'a Shader
+        text_shader: &'a Shader,
+        particle_shader: &'a Shader
     ) -> Game<'a> {
         let mut text = Text::new("font.png", "", text_shader);
         text.set_color(&vec4(1.0, 1.0, 1.0, 0.5));
+        engine.load_sound("music.mp3", "music");
+        engine.load_sound("hit.wav", "hit");
+        engine.load_sound("fireex.wav", "fireex");
+        engine.load_sound("powder.wav", "powder");
+        engine.load_sound("water.wav", "water");
+        engine.load_sound("button.wav", "button");
+        engine.load_sound("fire.wav", "fire");
+        engine.play_sound("music");
         Game {
             main_menu: MainMenu::new(sprite_shader),
-            game: Gameplay::new(sprite_shader),
+            game: Gameplay::new(sprite_shader, particle_shader, text_shader),
             engine: engine,
             event_handler: event_handler,
             camera: Camera::new(),
@@ -49,14 +58,10 @@ impl <'a> Game <'a> {
 
         match self.state {
             GameState::Menu => self.main_menu.update(self.engine, &events, &vp, &mut(self.state)),
-            GameState::Game => self.game.update(self.engine, &events, &vp, &mut(self.state))
+            GameState::Game => self.game.update(self.engine, &events, &mut(self.state), &mut(self.main_menu.state))
         }
 
         self.engine.render_object(&mut fps_meter, &vp);
         self.engine.tick();
-    }
-
-    pub fn start_game() {
-
     }
 }

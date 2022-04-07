@@ -6,6 +6,7 @@ pub struct Emitter {
     pub radius: f32,
 
     pub age: f32,
+    pub spawn_time: f32,
     pub lifespan: f32,
 
     pub alive: bool,
@@ -57,7 +58,7 @@ impl Emitter {
         }
 
         self.current_interval += delta;
-        if self.current_interval >= self.next_interval {
+        if self.age < self.spawn_time && self.current_interval >= self.next_interval {
             for _ in 0..rnd.gen_range(self.spawn_count.start..self.spawn_count.end) {
                 self.spawn_particle(rnd);
             }

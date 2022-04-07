@@ -2,6 +2,7 @@ pub mod fire;
 pub mod water;
 pub mod damage;
 pub mod powder;
+pub mod fireex;
 
 mod particle;
 mod emitter;
@@ -11,6 +12,7 @@ pub use water::Water;
 pub use fire::Fire;
 pub use damage::Damage;
 pub use powder::Powder;
+pub use fireex::Fireex;
 
 use super::*;
 
@@ -26,14 +28,6 @@ fn get_rand_vec2(range: &Range<Vec2>, rnd: &mut rand::rngs::ThreadRng) -> Vec2 {
     Vec2 {
         x: rnd.gen_range(range.start.x..range.end.x),
         y: rnd.gen_range(range.start.y..range.end.y),
-    }
-}
-
-fn get_rand_vec3(range: &Range<Vec3>, rnd: &mut rand::rngs::ThreadRng) -> Vec3 {
-    Vec3 {
-        x: rnd.gen_range(range.start.x..range.end.x),
-        y: rnd.gen_range(range.start.y..range.end.y),
-        z: rnd.gen_range(range.start.z..range.end.z),
     }
 }
 

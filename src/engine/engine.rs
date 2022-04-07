@@ -7,9 +7,6 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
 use rodio::{Decoder, OutputStream, source::Source};
-use rodio::cpal::traits::HostTrait;
-
-use std::io::Read;
 
 pub fn init(window: Window) -> Engine {
     Engine {
@@ -18,7 +15,9 @@ pub fn init(window: Window) -> Engine {
         frame_time: 0,
         sounds: HashMap::new(),
         sound_streams: vec![],
-        mouse_buttons: [false; 8]
+        volume: 0.1,
+        mouse_buttons: [false; 8],
+        music_sink: rodio::Sink::new_idle().0
     }
 }
 
@@ -28,7 +27,9 @@ pub struct Engine {
     frame_time: u32,
     sounds: HashMap<&'static str, String>,
     sound_streams: Vec<rodio::OutputStream>,
-    mouse_buttons: [bool; 8]
+    volume: f32,
+    mouse_buttons: [bool; 8],
+    music_sink: rodio::Sink
 }
 
 impl Engine {
@@ -54,7 +55,17 @@ impl Engine {
     }
 
     pub fn stop_working(&mut self) {
-        self.window.set_should_close(true);
+       self.window.set_should_close(true);
+    }
+
+    pub fn inc_vol(&mut self) {
+        self.volume += 0.05;
+        self.music_sink.set_volume(self.volume);
+    }
+
+    pub fn dec_vol(&mut self) {
+        self.volume -= 0.05;
+        self.music_sink.set_volume(self.volume);
     }
 
     pub fn tick(&mut self) {
@@ -95,6 +106,10 @@ impl Engine {
 
     pub fn play_sound(&mut self, name: &'static str) {
         let (stream, stream_handle) = OutputStream::try_default().unwrap();
+        let sink = rodio::Sink::try_new(&stream_handle).unwrap();
+        sink.set_volume(self.volume);
+        self.music_sink = sink;
+
         self.sound_streams.push(stream);
         let path = self.sounds.get(name).unwrap();
         let file = BufReader::new(File::open(path).unwrap());

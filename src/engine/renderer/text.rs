@@ -15,7 +15,7 @@ impl <'a> Text <'a> {
         Text {
             mesh: Mesh::new(),
             size: vec2(1.0, 1.0),
-            font: Texture::new(font, gl::NEAREST as i32),
+            font: Texture::new(font, gl::NEAREST as i32, false),
             position: vec3(0.0, 0.0, -1.0),
             shader: shader,
             text: text.to_string(),

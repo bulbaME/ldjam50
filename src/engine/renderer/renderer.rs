@@ -92,7 +92,10 @@ impl Renderer {
         let mut advance: f32 = 0.0;
 
         for c in text.get_text().as_bytes().iter() {
-            
+            if c < &start_char {
+                continue;
+            }
+
             // Get current char index
             let current = c - start_char; // try checking table
 

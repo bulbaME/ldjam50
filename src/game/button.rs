@@ -9,8 +9,8 @@ pub struct Button <'a> {
 
 impl <'a> Button <'a> {
     pub fn new(t1: &str, t2: &str, shader: &'a engine::renderer::shader::Shader) -> Button<'a> {
-        let s1 = Sprite::new(t1, gl::NEAREST as i32, shader);
-        let s2 = Sprite::new(t2, gl::NEAREST as i32, shader);
+        let s1 = Sprite::new(t1, gl::NEAREST as i32, shader, false);
+        let s2 = Sprite::new(t2, gl::NEAREST as i32, shader, false);
         Button {
             size: s1.get_size().clone(),
             unfocused: s1, 

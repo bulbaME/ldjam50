@@ -9,8 +9,8 @@ pub struct Sprite <'a> {
 }
 
 impl <'a> Sprite <'a> {
-    pub fn new<'b>(path: &str, filter: i32, shader: &'b Shader) -> Sprite<'b> {
-        let texture = Texture::new(path, filter);
+    pub fn new<'b>(path: &str, filter: i32, shader: &'b Shader, mirrored: bool) -> Sprite<'b> {
+        let texture = Texture::new(path, filter, mirrored);
         Sprite {
             mesh: Mesh::new(),
             size: texture.get_size().clone(),

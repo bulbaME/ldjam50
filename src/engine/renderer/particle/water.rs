@@ -1,7 +1,7 @@
 use super::*;
 
 pub struct Water <'a> {
-    emmiter: emitter::Emitter,
+    pub emmiter: emitter::Emitter,
     mesh: Mesh,
     shader: &'a Shader,
     position: Position
@@ -16,26 +16,27 @@ impl <'a> Water <'a> {
             radius: 45.0,
             
             age: 0.0,
-            lifespan: 15000.0,
+            spawn_time: 200.0,
+            lifespan: 5000.0,
             
             alive: true,
             start: false,
             
             particles: vec![],
             
-            particle_size: Range { start:5.0, end: 10.0 },
-            particle_final_size: Range { start: 10.0, end: 20.0 },
+            particle_size: Range { start: 4.0, end: 8.0 },
+            particle_final_size: Range { start: 5.0, end: 8.0 },
             
-            particle_lifespan: Range { start: 1000.0, end: 2000.0 },
+            particle_lifespan: Range { start: 3000.0, end: 4000.0 },
             
-            initial_count: Range { start: 15, end: 30 },
-            spawn_count: Range { start: 15, end: 30 },
+            initial_count: Range { start: 100, end: 150 },
+            spawn_count: Range { start: 100, end: 150 },
             
             spawn_interval: Range { start: 50.0, end: 100.0 },
             current_interval: 0.0,
             next_interval: 0.0,
             
-            start_color: Range { start: Vec4 {x: 0.08, y: 0.16, z: 0.6, w: 1.0 }, end: Vec4 { x: 0.12, y: 0.24, z: 1.0, w: 1.1 } },
+            start_color: Range { start: Vec4 {x: 0.25, y: 0.25, z: 0.75, w: 1.0 }, end: Vec4 { x: 0.27, y: 0.27, z: 0.8, w: 1.1 } },
             final_color: Range { start: Vec4 {x: 0.0, y: 0.0, z: 0.0, w: 0.0 }, end: Vec4 { x: 0.01, y: 0.01, z: 0.01, w: 0.1 } },
             only_affect_alpha: true,
             
@@ -45,8 +46,8 @@ impl <'a> Water <'a> {
             start_direction: Range { start: Vec2 {x: -1.0, y: 1.0}, end: Vec2 { x: 1.0, y: 1.00001 } },
             final_direction: Range { start: Vec2 {x: 0.0, y: 0.0}, end: Vec2 { x: 0.1, y: 0.000001 } },
             
-            start_mass: Range { start: 0.0, end: 0.0001 },
-            final_mass: Range { start: 6.0, end: 14.0 },
+            start_mass: Range { start: 3.0, end: 4.0 },
+            final_mass: Range { start: 12.0, end: 15.0 },
         };
 
         Water {
@@ -70,7 +71,7 @@ impl <'a> Water <'a> {
 
 impl <'a> Particle for Water <'a> {
     fn render(&mut self, engine: &mut Engine, vp: &Matrix4<f32>) {
-        self.render(engine, vp);
+        self.update(engine, vp);
     }
 }
 
@@ -83,9 +84,10 @@ impl <'a> Positioning for Water <'a> {
         &(self.position)
     }
 
-    fn set_size(&mut self, size: &Size) {}
+    fn set_size(&mut self, _size: &Size) {}
 
     fn set_position(&mut self, pos: &Position) {
         self.position = pos.clone();
+        self.emmiter.position = pos.clone();
     }
 }

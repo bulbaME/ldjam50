@@ -10,7 +10,7 @@ enum Animation {
 }
 
 pub struct Enemy <'a> {
-    anim_move: [Sprite<'a>; 1],
+    anim_move: [Sprite<'a>; 4],
     anim_fire: [Sprite<'a>; 11],
     anim_die: [Sprite<'a>; 10],
     anim_stop: [Sprite<'a>; 6],
@@ -22,50 +22,54 @@ pub struct Enemy <'a> {
     speed: f32,
     size: Size,
     position: Position,
-    dead: bool
+    dead: bool,
+    fired: bool,
+    dir: f32
 }
 
 impl <'a> Enemy <'a> {
-    pub fn new(shader: &'a Shader) -> Enemy {
+    pub fn new(shader: &'a Shader, mirrored: bool, dir: f32) -> Enemy {
         let anim_move = [
-            Sprite::new("em_6.png", gl::NEAREST as i32, shader),
-            // Sprite::new("em_2.png", gl::NEAREST as i32, shader),
+            Sprite::new("em_7.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("em_8.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("em_9.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("em_10.png", gl::NEAREST as i32, shader, mirrored),
         ];
 
         let anim_fire = [
-            Sprite::new("ef_1.png", gl::NEAREST as i32, shader),
-            Sprite::new("ef_2.png", gl::NEAREST as i32, shader),
-            Sprite::new("ef_3.png", gl::NEAREST as i32, shader),
-            Sprite::new("ef_4.png", gl::NEAREST as i32, shader),
-            Sprite::new("ef_5.png", gl::NEAREST as i32, shader),
-            Sprite::new("ef_6.png", gl::NEAREST as i32, shader),
-            Sprite::new("ef_7.png", gl::NEAREST as i32, shader),
-            Sprite::new("ef_8.png", gl::NEAREST as i32, shader),
-            Sprite::new("ef_9.png", gl::NEAREST as i32, shader),
-            Sprite::new("ef_10.png", gl::NEAREST as i32, shader),
-            Sprite::new("ef_11.png", gl::NEAREST as i32, shader)
+            Sprite::new("ef_1.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ef_2.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ef_3.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ef_4.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ef_5.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ef_6.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ef_7.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ef_8.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ef_9.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ef_10.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ef_11.png", gl::NEAREST as i32, shader, mirrored)
         ];
 
         let anim_die = [
-            Sprite::new("ed_1.png", gl::NEAREST as i32, shader),
-            Sprite::new("ed_2.png", gl::NEAREST as i32, shader),
-            Sprite::new("ed_3.png", gl::NEAREST as i32, shader),
-            Sprite::new("ed_4.png", gl::NEAREST as i32, shader),
-            Sprite::new("ed_5.png", gl::NEAREST as i32, shader),
-            Sprite::new("ed_6.png", gl::NEAREST as i32, shader),
-            Sprite::new("ed_7.png", gl::NEAREST as i32, shader),
-            Sprite::new("ed_8.png", gl::NEAREST as i32, shader),
-            Sprite::new("ed_9.png", gl::NEAREST as i32, shader),
-            Sprite::new("ed_10.png", gl::NEAREST as i32, shader)
+            Sprite::new("ed_1.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ed_2.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ed_3.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ed_4.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ed_5.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ed_6.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ed_7.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ed_8.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ed_9.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("ed_10.png", gl::NEAREST as i32, shader, mirrored)
         ];
 
         let anim_stop = [
-            Sprite::new("em_6.png", gl::NEAREST as i32, shader),
-            Sprite::new("em_5.png", gl::NEAREST as i32, shader),
-            Sprite::new("em_4.png", gl::NEAREST as i32, shader),
-            Sprite::new("em_3.png", gl::NEAREST as i32, shader),
-            Sprite::new("em_2.png", gl::NEAREST as i32, shader),
-            Sprite::new("em_1.png", gl::NEAREST as i32, shader)
+            Sprite::new("em_6.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("em_5.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("em_4.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("em_3.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("em_2.png", gl::NEAREST as i32, shader, mirrored),
+            Sprite::new("em_1.png", gl::NEAREST as i32, shader, mirrored)
         ];
 
         let mut enemy = Enemy {
@@ -81,7 +85,9 @@ impl <'a> Enemy <'a> {
             speed: 50.0,
             size: vec2(80.0, 80.0),
             position: vec3(0.0, 0.0, -1.0),
-            dead: false
+            dead: false,
+            fired: false,
+            dir: dir
         };
 
         enemy.set_size(&vec2(320.0, 320.0));
@@ -90,12 +96,28 @@ impl <'a> Enemy <'a> {
     }
 
     pub fn damage(&mut self) {
-        self.hp -= 1;
+        if let Animation::Move = self.anim {
+            self.hp -= 1;
+        }
+    }
+
+    pub fn fire(&mut self) {
+        if let Animation::Move = self.anim {
+            self.set_animation(Animation::Fire);
+        }
     }
 
     fn set_animation(&mut self, anim: Animation) {
         self.counter = 0;
         self.anim = anim;
+    }
+
+    pub fn get_fired(&self) -> bool {
+        self.fired
+    }
+
+    pub fn is_dead(&self) -> bool {
+        self.dead
     }
 
     pub fn update(
@@ -105,11 +127,6 @@ impl <'a> Enemy <'a> {
     ) {
         if self.dead {
             return;
-        }
-        let cursor = engine.get_cursor_pos();
-        let cursor_vec3 = vec3(cursor.x, cursor.y, 0.0);
-        if engine.get_mouse_press(0) && cursor_vec3.collides(self) {
-            self.hp -= 1;
         }
 
 
@@ -131,7 +148,9 @@ impl <'a> Enemy <'a> {
                 Animation::Fire => {
                     self.counter += 1;
                     if self.counter == self.anim_fire.len() as i32 {
-                        self.counter = 0;
+                        self.set_animation(Animation::Die);
+                        self.fired = true;
+                        engine.play_sound("fire");
                     }
                 },
 
@@ -146,8 +165,12 @@ impl <'a> Enemy <'a> {
                 Animation::Stop => {
                     self.counter += 1;
                     if self.counter == self.anim_stop.len() as i32 {
-                        self.set_animation(Animation::Die);
-                    }  
+                        if self.hp > 0 {
+                            self.set_animation(Animation::Fire);
+                        } else {
+                            self.set_animation(Animation::Die);
+                        }
+                    }
                 }
             }
         }
@@ -165,16 +188,14 @@ impl <'a> Enemy <'a> {
         // movement
         if let Animation::Move = self.anim {
             if (self.move_timer / 1_000_000) as f32 / 1000.0 > 1.0 / self.speed {
-                self.move_position_x(-1.0);
+                self.move_position_x(self.dir);
                 self.move_timer = 0;
             }
         }
 
         if self.hp <= 0 {
-            match self.anim {
-                Animation::Die => (),
-                Animation::Stop => (),
-                _ => self.set_animation(Animation::Stop)
+            if let Animation::Move = self.anim {
+                self.set_animation(Animation::Stop);
             }
         }
     }

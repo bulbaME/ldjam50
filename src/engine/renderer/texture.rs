@@ -6,7 +6,7 @@ pub struct Texture {
 }
 
 impl Texture {
-    pub fn new(path: &str, filter: i32) -> Texture {
+    pub fn new(path: &str, filter: i32, mirrored: bool) -> Texture {
 
         use image::io::Reader as ImageReader;
 
@@ -16,7 +16,10 @@ impl Texture {
         let img = ImageReader::open(["data/textures/", path].concat()).expect("Failed to open image")
             .decode().expect("Failed to decode image")
             .into_rgba8();
-        let img = image::imageops::flip_vertical(&img);
+        let mut img = image::imageops::flip_vertical(&img);
+        if mirrored {
+            img = image::imageops::flip_horizontal(&img);
+        }
 
         (width, height) = img.dimensions();
         let data = img.into_raw();

@@ -2,7 +2,6 @@ use gl::types::*;
 use std::ffi::CString;
 
 use super::*;
-use std::mem;
 
 fn read_shader(path: &str) -> String {
     std::fs::read_to_string(["data/shaders/", path].concat())
