@@ -12,7 +12,7 @@ backyard. Now this tree was only reminder to lumberjack son about his father.
 Help lumberjack to save his father's tree... or at least make your best.
 
 
-## Hot to play?🤨
+## How to play?🤨
 ![](https://media.discordapp.net/attachments/406868570333642752/961427085245693982/4d3e4.png?width=934&height=603)
 > You must water and fertilize the tree so it doesn't die. 
 Also you should defend the tree from ghosts, which are trying to burn it down. 
